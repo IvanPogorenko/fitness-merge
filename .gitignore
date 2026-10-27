@@ -1,0 +1,18 @@
+# Dependencias de Node
+be/node_modules/
+
+# Archivos de entorno 
+**/.env
+.env.local
+
+# Archivos de compilación
+dist/
+build/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración del editor (VS Code, WebStorm, etc.)
+.vscode/
+.idea/
