@@ -63,7 +63,7 @@ export class CreateVideoContentTables1700000000001 implements MigrationInterface
     `);
 
     // ==========================================
-    // 3. TABLE: video_tags (LA QUE FALTABA)
+    // 3. TABLE: video_tags 
     // ==========================================
     await queryRunner.createTable(
       new Table({
