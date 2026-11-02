@@ -1,39 +1,47 @@
 services:
   backend:
     build:
-      context: ../baackendFitness
-      dockerfile: Dockerfile
-    container_name: fitness-backend-dev
+      context: ../be
+      dockerfile: dockerfile
+    container_name: fitness-merge-backend-dev
     ports:
       - "${BACKEND_PORT}:8080"
     environment:
+      PORT: 8080
+      NODE_ENV: development
+      DEMO_AUTH: "true"
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${POSTGRES_USER}
+      DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
+      # Изменения файлов с Windows-хоста не доходят до контейнера как события inotify — следим опросом
+      TSC_WATCHFILE: DynamicPriorityPolling
+      TSC_WATCHDIRECTORY: DynamicPriorityPolling
+    # Код монтируется в WORKDIR образа (/app); node_modules остаются от сборки образа (Linux-бинарники)
     volumes:
-      - ../baackendFitness:/usr/src/app
-      - /usr/src/app/node_modules
-    command: npm run start:dev
+      - ../be:/app
+      - /app/node_modules
+    command: sh -c "npm run migration:run && npm run start:dev"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - fitness-network
 
   frontend:
     build:
-      context: ../frontendFitness
-      dockerfile: Dockerfile
-    container_name: fitness-frontend-dev
+      context: ../fe
+      dockerfile: dockerfile
+    container_name: fitness-merge-frontend-dev
     ports:
       - "${FRONTEND_PORT}:4200"
     environment:
       BACKEND_URL: ${BACKEND_URL}
     volumes:
-      - ../frontendFitness:/app
+      - ../fe:/app
       - /app/node_modules
-    command: sh -c "npm install && npm run dev"
+    command: npm start -- --host 0.0.0.0 --poll 2000
     depends_on:
       - backend
     networks:
@@ -41,7 +49,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: fitness-postgres-dev
+    container_name: fitness-merge-postgres-dev
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -50,12 +58,17 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - fitness-network
 
   adminer:
     image: adminer:latest
-    container_name: fitness-adminer-dev
+    container_name: fitness-merge-adminer-dev
     ports:
       - "8081:8080"
     environment:

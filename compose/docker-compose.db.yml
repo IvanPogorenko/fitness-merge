@@ -1,0 +1,26 @@
+# Учебная PostgreSQL для ЛР3: база разработки и отдельная база тестов в одном контейнере.
+# Порт 5433 на хосте, чтобы не конфликтовать с локально установленным PostgreSQL на 5432.
+# Запуск: docker compose -f compose/docker-compose.db.yml up -d
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: videohost-postgres
+    environment:
+      POSTGRES_USER: videohost
+      POSTGRES_PASSWORD: videohost_dev_only
+      POSTGRES_DB: fitness_merge_dev
+      VIDEOHOST_TEST_DB: fitness_merge_test
+      VIDEOHOST_SCRATCH_DB: fitness_merge_scratch
+    ports:
+      - "5433:5432"
+    volumes:
+      - videohost-pg-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U videohost -d fitness_merge_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  videohost-pg-data:

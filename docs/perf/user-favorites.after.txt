@@ -1,0 +1,28 @@
+-- user-favorites [after]
+-- PostgreSQL 17.6; данные: {"videos":"12000","video_tags":"34753","favorites":"60000","channels":"400"}
+-- индексы: idx_favorites_user_created, idx_video_tags_tag, idx_videos_catalog_published, idx_videos_channel_created, pk_favorites, pk_video_tags, pk_videos, uq_videos_storage_key
+-- параметры: ["1"]
+-- Execution Time по 5 повторам после 2 прогревов (ms): 0.139, 0.158, 0.156, 0.135, 0.155; min=0.135 median=0.155
+SELECT v.id, v.title, c.title AS channel_title, f.created_at FROM favorites f JOIN videos v ON v.id = f.video_id JOIN channels c ON c.id = v.channel_id WHERE f.user_id = $1 AND v.status = 'published' ORDER BY f.created_at DESC, f.video_id DESC LIMIT 50;
+
+Limit  (cost=0.85..368.01 rows=50 width=66) (actual time=0.015..0.138 rows=50 loops=1)
+  Buffers: shared hit=254
+  ->  Nested Loop  (cost=0.85..412.07 rows=56 width=66) (actual time=0.015..0.134 rows=50 loops=1)
+        Buffers: shared hit=254
+        ->  Nested Loop  (cost=0.70..402.67 rows=56 width=57) (actual time=0.013..0.087 rows=50 loops=1)
+              Buffers: shared hit=154
+              ->  Index Only Scan using idx_favorites_user_created on favorites f  (cost=0.41..5.62 rows=69 width=16) (actual time=0.009..0.013 rows=50 loops=1)
+                    Index Cond: (user_id = '1'::bigint)
+                    Heap Fetches: 0
+                    Buffers: shared hit=4
+              ->  Index Scan using pk_videos on videos v  (cost=0.29..5.75 rows=1 width=41) (actual time=0.001..0.001 rows=1 loops=50)
+                    Index Cond: (id = f.video_id)
+                    Filter: (status = 'published'::text)
+                    Buffers: shared hit=150
+        ->  Index Scan using pk_channels on channels c  (cost=0.15..0.17 rows=1 width=25) (actual time=0.001..0.001 rows=1 loops=50)
+              Index Cond: (id = v.channel_id)
+              Buffers: shared hit=100
+Planning:
+  Buffers: shared hit=20
+Planning Time: 0.301 ms
+Execution Time: 0.155 ms

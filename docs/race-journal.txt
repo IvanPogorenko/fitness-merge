@@ -1,0 +1,31 @@
+База fitness_merge_dev; владелец каналов гонки — пользователь 6; quota=104857600, размер видео=83886080
+
+== HTTP: два одновременных POST /videos по 83886080 байт в канал 9
+[+   70 ms] db     до:    quota_bytes=104857600 used_bytes=0 videos=0 sum(size_bytes)=0
+[+  113 ms] http   Race HTTP A: 201 {"id":"41","title":"Race HTTP A","description":null,"status":"draft","sizeBytes":"83886080","commentsEnabled":true,"crea
+[+  113 ms] http   Race HTTP B: 409 {"message":"Channel quota exceeded","error":"Conflict","statusCode":409}
+[+  114 ms] db     после: quota_bytes=104857600 used_bytes=83886080 videos=1 sum(size_bytes)=83886080
+
+== Две сессии, первая завершается COMMIT; канал 10
+[+  116 ms] db     до:    quota_bytes=104857600 used_bytes=0 videos=0 sum(size_bytes)=0
+[+  204 ms] A      BEGIN
+[+  207 ms] A      UPDATE channels ... RETURNING -> rows=1 (строка канала заблокирована)
+[+  209 ms] A      INSERT videos (транзакция удерживается)
+[+  209 ms] B      BEGIN
+[+  248 ms] B      UPDATE channels ... ждет: Lock/transactionid
+[+  249 ms] A      COMMIT
+[+  249 ms] B      UPDATE после освобождения блокировки -> rows=0
+[+  249 ms] B      квоты нет -> ROLLBACK -> 409
+[+  250 ms] db     после: quota_bytes=104857600 used_bytes=83886080 videos=1 sum(size_bytes)=83886080
+
+== Две сессии, первая завершается ROLLBACK; канал 11
+[+  256 ms] db     до:    quota_bytes=104857600 used_bytes=0 videos=0 sum(size_bytes)=0
+[+  331 ms] A      BEGIN
+[+  334 ms] A      UPDATE channels ... RETURNING -> rows=1 (строка канала заблокирована)
+[+  336 ms] A      INSERT videos (транзакция удерживается)
+[+  336 ms] B      BEGIN
+[+  369 ms] B      UPDATE channels ... ждет: Lock/transactionid
+[+  370 ms] A      ROLLBACK
+[+  370 ms] B      UPDATE после освобождения блокировки -> rows=1
+[+  373 ms] B      INSERT videos, COMMIT -> 201
+[+  374 ms] db     после: quota_bytes=104857600 used_bytes=83886080 videos=1 sum(size_bytes)=83886080

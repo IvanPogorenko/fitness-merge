@@ -1,0 +1,19 @@
+-- channel-videos [before]
+-- PostgreSQL 17.6; данные: {"videos":"12000","video_tags":"34753","favorites":"60000","channels":"400"}
+-- индексы: pk_favorites, pk_video_tags, pk_videos, uq_videos_storage_key
+-- параметры: ["1"]
+-- Execution Time по 5 повторам после 2 прогревов (ms): 1.576, 1.252, 1.35, 1.108, 1.092; min=1.092 median=1.252
+SELECT id, title, status, size_bytes, created_at FROM videos WHERE channel_id = $1 ORDER BY created_at DESC, id DESC LIMIT 20;
+
+Limit  (cost=389.35..389.40 rows=20 width=58) (actual time=1.081..1.084 rows=20 loops=1)
+  Buffers: shared hit=203
+  ->  Sort  (cost=389.35..392.76 rows=1366 width=58) (actual time=1.081..1.082 rows=20 loops=1)
+        Sort Key: created_at DESC, id DESC
+        Sort Method: top-N heapsort  Memory: 29kB
+        Buffers: shared hit=203
+        ->  Seq Scan on videos  (cost=0.00..353.00 rows=1366 width=58) (actual time=0.006..0.894 rows=1366 loops=1)
+              Filter: (channel_id = '1'::bigint)
+              Rows Removed by Filter: 10634
+              Buffers: shared hit=203
+Planning Time: 0.044 ms
+Execution Time: 1.092 ms

@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 C:/Users/Public/Projects/fitness-merge/be
+
+ ✓ test/sql-queries.e2e-spec.ts > SQL-запросы на малом наборе > каждый запрос дает ожидаемый ответ 93ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 2. созданное видео остается в БД после перезапуска приложения 368ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 3. создание видео с тегами: одно видео, связи, used_bytes увеличен ровно на размер 222ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. пустое название → 400, таблицы и квота не изменены 178ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. нулевой размер → 400, таблицы и квота не изменены 160ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. отрицательный размер → 400, таблицы и квота не изменены 155ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. лишнее поле status → 400, таблицы и квота не изменены 170ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. лишнее поле ownerId → 400, таблицы и квота не изменены 184ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. повтор tagIds → 400, таблицы и квота не изменены 177ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 4. небезопасное number для bigint → 400, таблицы и квота не изменены 172ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 5. несуществующий тег → 400, нет частично сохраненного видео и расхода квоты 167ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 9. недостаток квоты → 409, число видео и used_bytes прежние 215ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 10. ошибка после изменения квоты и вставки видео → полный откат videos, video_tags и channels 179ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 11. две заявки на последнюю квоту: один 201, один 409, превышения нет 231ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 12. изменение чужого видео → 403, чтение чужого draft → 404, данные прежние 214ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > PATCH и смена статуса владельцем: published_at сохраняется при повторной публикации 237ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 13. hidden и draft не попадают в каталог и избранное 227ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 14. курсор при одинаковом published_at: на неизменном наборе нет повторов и пропусков 487ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > каталог: поиск ищет % и _ буквально, limit ограничен 1..100, поврежденный курсор → 400 211ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > идентификация: без пользователя 401, неизвестный пользователь 401, чужой канал 403, неизвестный канал 400 170ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 16. bigint больше MAX_SAFE_INTEGER возвращается без потери точности 170ms
+ ✓ test/videos.e2e-spec.ts > API видео на PostgreSQL > 16. число SQL на страницу каталога и избранного фиксировано (нет N+1) 180ms
+ ✓ test/favorites.e2e-spec.ts > Избранное > 7. два одновременных добавления в избранное: одна связь, оба ответа 204 249ms
+ ✓ test/favorites.e2e-spec.ts > Избранное > добавить можно только доступное published-видео 197ms
+ ✓ test/favorites.e2e-spec.ts > Избранное > 8. повторное удаление → 204, связи нет, чужие связи не затронуты 195ms
+ ✓ test/favorites.e2e-spec.ts > Избранное > 15. LEFT JOIN и пустые связи: канал без видео и пользователи без избранного дают нули 183ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 1. развертывание с нуля: миграции и seed проходят без ручного SQL 548ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > FK канала на пользователя 5ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > FK видео на канал 2ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > FK связи на тег 3ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > RESTRICT при удалении владельца канала 2ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > used_bytes > quota_bytes 1ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > отрицательный used_bytes 1ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > неизвестный статус 2ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > нулевой размер 2ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > published без published_at 1ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > пустое название 1ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > position <= 0 1ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > повтор storage_key 3ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > email после нормализации 2ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > имя тега после trim и нижнего регистра 3ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > повтор пары избранного 2ms
+ ✓ test/schema.e2e-spec.ts > Схема и миграции > 6. FK, CHECK и уникальность прямым SQL > повтор позиции в плейлисте 6ms
+ ✓ test/schema.e2e-spec.ts > Миграция comments_enabled на заполненной базе > откат удаляет столбец без потери строк, повторное применение возвращает его со значением true 49ms
+ ✓ test/race.e2e-spec.ts > 11. Гонка за последнюю квоту на двух соединениях > первая подтверждает — вторая после освобождения блокировки не получает квоту 282ms
+ ✓ test/race.e2e-spec.ts > 11. Гонка за последнюю квоту на двух соединениях > первая откатывается — квота достается второй 335ms
+ ✓ test/race.e2e-spec.ts > 11. Гонка за последнюю квоту на двух соединениях > наивный «прочитать used_bytes, затем записать» без условия теряет инвариант (для сравнения) 272ms
+
+ Test Files  5 passed (5)
+      Tests  47 passed (47)
+   Start at  17:59:09
+   Duration  18.61s (transform 632ms, setup 0ms, import 7.41s, tests 8.91s, environment 1ms)
+

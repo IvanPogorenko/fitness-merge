@@ -1,13 +1,13 @@
+import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
+// Модульные тесты без базы данных (интеграционные — vitest.config.e2e.ts)
 export default defineConfig({
-  // Resolves the path aliases declared in tsconfig.json, including the ones
-  // added by `nest g library`.
-  plugins: [tsconfigPaths()],
+  plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
     globals: true,
     root: './',
-    include: ['**/*.spec.ts'],
+    include: ['src/**/*.spec.ts'],
+    passWithNoTests: true,
   },
 });

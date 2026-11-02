@@ -1,0 +1,36 @@
+-- catalog-next-page [after]
+-- PostgreSQL 17.6; данные: {"videos":"12000","video_tags":"34753","favorites":"60000","channels":"400"}
+-- индексы: idx_favorites_user_created, idx_video_tags_tag, idx_videos_catalog_published, idx_videos_channel_created, pk_favorites, pk_video_tags, pk_videos, uq_videos_storage_key
+-- параметры: ["2025-06-04T16:05:52.422Z","5030"]
+-- Execution Time по 5 повторам после 2 прогревов (ms): 0.097, 0.113, 0.11, 0.093, 0.124; min=0.093 median=0.11
+SELECT v.id, v.title, v.published_at, c.title AS channel_title, u.display_name AS author_name FROM videos v JOIN channels c ON c.id = v.channel_id JOIN users u ON u.id = c.owner_id WHERE v.status = 'published' AND (v.published_at, v.id) < ($1::timestamptz, $2::bigint) ORDER BY v.published_at DESC, v.id DESC LIMIT 21;
+
+Limit  (cost=0.73..7.49 rows=21 width=71) (actual time=0.022..0.099 rows=21 loops=1)
+  Buffers: shared hit=109
+  ->  Nested Loop  (cost=0.73..1309.48 rows=4063 width=71) (actual time=0.022..0.096 rows=21 loops=1)
+        Buffers: shared hit=109
+        ->  Nested Loop  (cost=0.44..1119.94 rows=4063 width=66) (actual time=0.018..0.061 rows=21 loops=1)
+              Buffers: shared hit=58
+              ->  Index Scan using idx_videos_catalog_published on videos v  (cost=0.29..951.35 rows=4063 width=49) (actual time=0.011..0.024 rows=21 loops=1)
+                    Index Cond: (ROW(published_at, id) < ROW('2025-06-04 19:05:52.422+03'::timestamp with time zone, '5030'::bigint))
+                    Buffers: shared hit=22
+              ->  Memoize  (cost=0.16..0.18 rows=1 width=33) (actual time=0.001..0.001 rows=1 loops=21)
+                    Cache Key: v.channel_id
+                    Cache Mode: logical
+                    Hits: 3  Misses: 18  Evictions: 0  Overflows: 0  Memory Usage: 3kB
+                    Buffers: shared hit=36
+                    ->  Index Scan using pk_channels on channels c  (cost=0.15..0.17 rows=1 width=33) (actual time=0.001..0.001 rows=1 loops=18)
+                          Index Cond: (id = v.channel_id)
+                          Buffers: shared hit=36
+        ->  Memoize  (cost=0.29..0.41 rows=1 width=21) (actual time=0.001..0.001 rows=1 loops=21)
+              Cache Key: c.owner_id
+              Cache Mode: logical
+              Hits: 4  Misses: 17  Evictions: 0  Overflows: 0  Memory Usage: 3kB
+              Buffers: shared hit=51
+              ->  Index Scan using pk_users on users u  (cost=0.28..0.40 rows=1 width=21) (actual time=0.001..0.001 rows=1 loops=17)
+                    Index Cond: (id = c.owner_id)
+                    Buffers: shared hit=51
+Planning:
+  Buffers: shared hit=11
+Planning Time: 0.261 ms
+Execution Time: 0.124 ms

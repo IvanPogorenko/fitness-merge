@@ -1,0 +1,37 @@
+-- catalog-next-page [before]
+-- PostgreSQL 17.6; данные: {"videos":"12000","video_tags":"34753","favorites":"60000","channels":"400"}
+-- индексы: pk_favorites, pk_video_tags, pk_videos, uq_videos_storage_key
+-- параметры: ["2025-06-04T16:05:52.422Z","5030"]
+-- Execution Time по 5 повторам после 2 прогревов (ms): 4.167, 4.003, 3.998, 4.315, 3.795; min=3.795 median=4.003
+SELECT v.id, v.title, v.published_at, c.title AS channel_title, u.display_name AS author_name FROM videos v JOIN channels c ON c.id = v.channel_id JOIN users u ON u.id = c.owner_id WHERE v.status = 'published' AND (v.published_at, v.id) < ($1::timestamptz, $2::bigint) ORDER BY v.published_at DESC, v.id DESC LIMIT 21;
+
+Limit  (cost=578.56..578.62 rows=21 width=71) (actual time=3.761..3.765 rows=21 loops=1)
+  Buffers: shared hit=215
+  ->  Sort  (cost=578.56..588.72 rows=4063 width=71) (actual time=3.761..3.763 rows=21 loops=1)
+        Sort Key: v.published_at DESC, v.id DESC
+        Sort Method: top-N heapsort  Memory: 29kB
+        Buffers: shared hit=215
+        ->  Hash Join  (cost=34.50..469.02 rows=4063 width=71) (actual time=0.208..3.201 rows=4690 loops=1)
+              Hash Cond: (c.owner_id = u.id)
+              Buffers: shared hit=215
+              ->  Hash Join  (cost=14.00..437.78 rows=4063 width=66) (actual time=0.094..2.387 rows=4690 loops=1)
+                    Hash Cond: (v.channel_id = c.id)
+                    Buffers: shared hit=208
+                    ->  Seq Scan on videos v  (cost=0.00..413.00 rows=4063 width=49) (actual time=0.007..1.614 rows=4690 loops=1)
+                          Filter: ((status = 'published'::text) AND (ROW(published_at, id) < ROW('2025-06-04 19:05:52.422+03'::timestamp with time zone, '5030'::bigint)))
+                          Rows Removed by Filter: 7310
+                          Buffers: shared hit=203
+                    ->  Hash  (cost=9.00..9.00 rows=400 width=33) (actual time=0.081..0.082 rows=400 loops=1)
+                          Buckets: 1024  Batches: 1  Memory Usage: 37kB
+                          Buffers: shared hit=5
+                          ->  Seq Scan on channels c  (cost=0.00..9.00 rows=400 width=33) (actual time=0.004..0.042 rows=400 loops=1)
+                                Buffers: shared hit=5
+              ->  Hash  (cost=13.00..13.00 rows=600 width=21) (actual time=0.109..0.109 rows=600 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 41kB
+                    Buffers: shared hit=7
+                    ->  Seq Scan on users u  (cost=0.00..13.00 rows=600 width=21) (actual time=0.010..0.056 rows=600 loops=1)
+                          Buffers: shared hit=7
+Planning:
+  Buffers: shared hit=5
+Planning Time: 0.289 ms
+Execution Time: 3.795 ms

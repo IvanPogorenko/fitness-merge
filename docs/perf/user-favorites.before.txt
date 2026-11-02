@@ -1,0 +1,42 @@
+-- user-favorites [before]
+-- PostgreSQL 17.6; данные: {"videos":"12000","video_tags":"34753","favorites":"60000","channels":"400"}
+-- индексы: pk_favorites, pk_video_tags, pk_videos, uq_videos_storage_key
+-- параметры: ["1"]
+-- Execution Time по 5 повторам после 2 прогревов (ms): 2.677, 2.479, 2.386, 2.376, 2.394; min=2.376 median=2.394
+SELECT v.id, v.title, c.title AS channel_title, f.created_at FROM favorites f JOIN videos v ON v.id = f.video_id JOIN channels c ON c.id = v.channel_id WHERE f.user_id = $1 AND v.status = 'published' ORDER BY f.created_at DESC, f.video_id DESC LIMIT 50;
+
+Limit  (cost=771.93..772.06 rows=50 width=66) (actual time=2.358..2.363 rows=50 loops=1)
+  Buffers: shared hit=392
+  ->  Sort  (cost=771.93..772.43 rows=199 width=66) (actual time=2.357..2.360 rows=50 loops=1)
+        Sort Key: f.created_at DESC, v.id DESC
+        Sort Method: top-N heapsort  Memory: 35kB
+        Buffers: shared hit=392
+        ->  Hash Join  (cost=386.35..765.32 rows=199 width=66) (actual time=0.305..2.310 rows=239 loops=1)
+              Hash Cond: (v.channel_id = c.id)
+              Buffers: shared hit=392
+              ->  Hash Join  (cost=372.35..750.80 rows=199 width=57) (actual time=0.217..2.160 rows=239 loops=1)
+                    Hash Cond: (v.id = f.video_id)
+                    Buffers: shared hit=387
+                    ->  Seq Scan on videos v  (cost=0.00..353.00 rows=9691 width=41) (actual time=0.005..1.428 rows=9691 loops=1)
+                          Filter: (status = 'published'::text)
+                          Rows Removed by Filter: 2309
+                          Buffers: shared hit=203
+                    ->  Hash  (cost=369.27..369.27 rows=246 width=16) (actual time=0.198..0.198 rows=239 loops=1)
+                          Buckets: 1024  Batches: 1  Memory Usage: 20kB
+                          Buffers: shared hit=184
+                          ->  Bitmap Heap Scan on favorites f  (cost=10.20..369.27 rows=246 width=16) (actual time=0.039..0.169 rows=239 loops=1)
+                                Recheck Cond: (user_id = '1'::bigint)
+                                Heap Blocks: exact=181
+                                Buffers: shared hit=184
+                                ->  Bitmap Index Scan on pk_favorites  (cost=0.00..10.13 rows=246 width=0) (actual time=0.023..0.023 rows=239 loops=1)
+                                      Index Cond: (user_id = '1'::bigint)
+                                      Buffers: shared hit=3
+              ->  Hash  (cost=9.00..9.00 rows=400 width=25) (actual time=0.082..0.082 rows=400 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 33kB
+                    Buffers: shared hit=5
+                    ->  Seq Scan on channels c  (cost=0.00..9.00 rows=400 width=25) (actual time=0.009..0.038 rows=400 loops=1)
+                          Buffers: shared hit=5
+Planning:
+  Buffers: shared hit=14
+Planning Time: 0.258 ms
+Execution Time: 2.394 ms

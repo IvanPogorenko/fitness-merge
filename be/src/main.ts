@@ -1,33 +1,23 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import {
-    DocumentBuilder,
-    SwaggerModule,
-} from '@nestjs/swagger';
-import {AppModule} from "./app.module.js";
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { config } from 'dotenv';
+import { AppModule } from './app.module.js';
+import { configureApp } from './app.setup.js';
+import { assertDemoAuthAllowed } from './common/demo-auth.js';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+  config({ quiet: true });
+  assertDemoAuthAllowed();
 
-    app.useGlobalPipes(
-        new ValidationPipe({
-            whitelist: true,
-            forbidNonWhitelisted: true,
-            transform: true,
-        }),
-    );
+  const app = configureApp(await NestFactory.create(AppModule));
 
-    const config = new DocumentBuilder()
-        .setTitle('Video Hosting API')
-        .setDescription('API for video hosting application')
-        .setVersion('1.0')
-        .build();
+  const document = SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder().setTitle('Video Hosting API').setDescription('API for video hosting application').setVersion('1.0').build(),
+  );
+  SwaggerModule.setup('api', app, document);
 
-    const document = SwaggerModule.createDocument(app, config);
-
-    SwaggerModule.setup('api', app, document);
-
-    await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000);
 }
 
 bootstrap();
