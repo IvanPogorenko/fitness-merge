@@ -5,7 +5,9 @@ import { assertTrainingEnvironment, runInTransaction } from './seed-utils.js';
 // Пересоздает расширенный набор с нуля; после вставки обновляет статистику планировщика
 async function main(): Promise<void> {
   assertTrainingEnvironment();
+  
   await dataSource.initialize();
+  
   try {
     const started = Date.now();
     await runInTransaction(dataSource, seedLarge);
