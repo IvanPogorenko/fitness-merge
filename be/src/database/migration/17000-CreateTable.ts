@@ -42,7 +42,7 @@ export class CreateTables1700000000000 implements MigrationInterface {
       }),
     );
 
-    // 4. Restricción CHECK para used_bytes
+    // 4. Restrition CHECK to used_bytes
     await queryRunner.query(`
       ALTER TABLE channels 
       ADD CONSTRAINT check_used_bytes_quota 
